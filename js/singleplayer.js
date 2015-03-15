@@ -11,7 +11,13 @@ var singleplayer = {
                  
         // Finally start the level
         singleplayer.startCurrentLevel();
-    }, 
+    },
+
+    play:function(){
+        game.animationLoop();
+        game.animationInterval = setInterval(game.animationLoop,game.animationTimeout);
+        game.start();
+    },
     exit:function(){
         // Show the starting menu layer
         $('.gamelayer').hide();
@@ -28,6 +34,9 @@ var singleplayer = {
         // Load all the assets for the level
         game.currentMapImage = loader.loadImage(level.mapImage);
         game.currentLevel = level;
+
+        game.offsetX = level.startX * game.gridSize;
+        game.offsetY = level.startY * game.gridSize;
          
         // Enable the enter mission button once all assets are loaded
         if (loader.loaded){
