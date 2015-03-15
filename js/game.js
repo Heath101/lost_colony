@@ -6,7 +6,8 @@ var game = {
     // Start preloading assets
     init: function(){
         loader.init();
-         
+        mouse.init();
+
         $('.gamelayer').hide();
         $('#gamestartscreen').show();
   
@@ -38,18 +39,59 @@ var game = {
     animationTimeout:100, // 100 milliseconds or 10 times a second
     offsetX:0,    // X & Y panning offsets for the map
     offsetY:0,
+    panningThreshold:60, // Distance from edge of canvas at which panning starts
+    panningSpeed:10, // Pixels to pan every drawing loop
+    handlePanning:function(){
+    // do not pan if mouse leaves the canvas
+      if (!mouse.insideCanvas){
+          return;
+      }
+    
+      if(mouse.x<=game.panningThreshold){
+          if (game.offsetX>=game.panningSpeed){
+              game.refreshBackground = true;
+              game.offsetX -= game.panningSpeed;
+          }
+      } else if (mouse.x>= game.canvasWidth - game.panningThreshold){
+          if (game.offsetX + game.canvasWidth + game.panningSpeed <= game.currentMapImage.width){
+              game.refreshBackground = true;
+              game.offsetX += game.panningSpeed;
+          }
+      }
+       
+      if(mouse.y<=game.panningThreshold){
+          if (game.offsetY>=game.panningSpeed){
+              game.refreshBackground = true;
+              game.offsetY -= game.panningSpeed;
+          }
+      } else if (mouse.y>= game.canvasHeight - game.panningThreshold){
+          if (game.offsetY + game.canvasHeight + game.panningSpeed <= game.currentMapImage.height){
+              game.refreshBackground = true;
+              game.offsetY += game.panningSpeed;
+          }
+      }
+       
+      if (game.refreshBackground){
+          // Update mouse game coordinates based on game offsets
+          mouse.calculateGameCoordinates();
+      }
+    },
     animationLoop:function(){
-   
-        // Animate each of the elements within the game
+
     },
     drawingLoop:function(){
         // Handle Panning the Map
+        game.handlePanning();
+
         // Since drawing the background map is a fairly large operation,
         // we only redraw the background if it changes (due to panning)
         if (game.refreshBackground){
             game.backgroundContext.drawImage(game.currentMapImage,game.offsetX,game.offsetY, game.canvasWidth,game.canvasHeight, 0,0,game.canvasWidth,game.canvasHeight);
             game.refreshBackground = false;
         }
+
+        // Draw the mouse
+        mouse.draw()
          
         // Call the drawing loop for the next frame using request animation frame
         if (game.running){
