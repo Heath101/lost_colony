@@ -25,14 +25,14 @@ var mouse = {
       var y = Math.min(this.gameY,this.dragY);
       var width = Math.abs(this.gameX-this.dragX)
       var height = Math.abs(this.gameY-this.dragY)
-      mouse.clearDragSelectRect();
+      // mouse.clearDragSelectRect();
       game.foregroundContext.strokeStyle = 'white';
       game.foregroundContext.strokeRect(x-game.offsetX,y-game.offsetY, width, height);
     }
   },
-  clearDragSelectRect:function(){
-    game.foregroundContext.clearRect(0, 0, game.canvasWidth, game.canvasHeight)
-  },
+  // clearDragSelectRect:function(){
+  //   game.foregroundContext.clearRect(0, 0, game.canvasWidth, game.canvasHeight)
+  // },
   calculateGameCoordinates:function(){
     mouse.gameX = mouse.x + game.offsetX ;
     mouse.gameY = mouse.y + game.offsetY;
@@ -55,7 +55,7 @@ var mouse = {
         }
       } else {
         mouse.dragSelect = false;
-        mouse.clearDragSelectRect();
+        //mouse.clearDragSelectRect();
       }
     });
      
