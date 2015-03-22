@@ -13,8 +13,8 @@ var maps = {
             "requirements":{
                 "buildings":["base","starport","harvester","ground-turret"],
                 "vehicles":["transport","harvester","scout-tank","heavy-tank"],
-                "aircraft":[],
-                "terrain":[]
+                "aircraft":["chopper","wraith"],
+                "terrain":["oilfield","bigrocks","smallrocks"]
             },
              
             /* Entities to be added */
@@ -43,6 +43,19 @@ var maps = {
                 {"type":"vehicles","name":"harvester","x":28,"y":12,"team":"green", "direction":6},
                 {"type":"vehicles","name":"scout-tank","x":28,"y":14,"team":"green", "direction":1},
                 {"type":"vehicles","name":"heavy-tank","x":28,"y":16,"team":"green", "direction":0},
+
+                {"type":"aircraft","name":"chopper","x":20,"y":22,"team":"blue", "direction":2},    
+                {"type":"aircraft","name":"wraith","x":23,"y":22,"team":"green", "direction":3},
+
+                {"type":"aircraft","name":"chopper","x":20,"y":22,"team":"blue", "direction":2},
+                {"type":"aircraft","name":"wraith","x":23,"y":22,"team":"green", "direction":3},
+                
+                {"type":"terrain","name":"oilfield","x":5,"y":7},
+                {"type":"terrain","name":"oilfield","x":8,"y":7,"action":"hint"},
+                {"type":"terrain","name":"bigrocks","x":5,"y":3},
+                {"type":"terrain","name":"smallrocks","x":8,"y":3},
+
+
             ]
              
         }
