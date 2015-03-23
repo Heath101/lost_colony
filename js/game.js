@@ -1,7 +1,7 @@
 $(window).load(function() {
   game.init();
 });
-  
+
 var game = {
     // Start preloading assets
     init: function(){
@@ -10,13 +10,13 @@ var game = {
 
         $('.gamelayer').hide();
         $('#gamestartscreen').show();
-  
+
         game.backgroundCanvas = document.getElementById('gamebackgroundcanvas');
         game.backgroundContext = game.backgroundCanvas.getContext('2d');
-         
+
         game.foregroundCanvas = document.getElementById('gameforegroundcanvas');
         game.foregroundContext = game.foregroundCanvas.getContext('2d');
-         
+
         game.canvasWidth = game.backgroundCanvas.width;
         game.canvasHeight = game.backgroundCanvas.height;
     },
@@ -25,16 +25,20 @@ var game = {
         $('#gameinterfacescreen').show();
         game.running = true;
         game.refreshBackground= true;
-         
+
         game.drawingLoop();
     },
-     
+
     // The map is broken into square tiles of this size (20 pixels x 20 pixels)
     gridSize:20,
-     
+
     // Store whether or not the background moved and needs to be redrawn
     backgroundChanged:true,
-         
+
+    //Movement related properties
+    speedAdjustmentFactor:1/64,
+    turnSpeedAdjustmentFactor:1/8,
+
     // A control loop that runs at a fixed period of time
     animationTimeout:100, // 100 milliseconds or 10 times a second
     offsetX:0,    // X & Y panning offsets for the map
@@ -46,7 +50,7 @@ var game = {
       if (!mouse.insideCanvas){
           return;
       }
-    
+
       if(mouse.x<=game.panningThreshold){
           if (game.offsetX>=game.panningSpeed){
               game.refreshBackground = true;
@@ -58,7 +62,7 @@ var game = {
               game.offsetX += game.panningSpeed;
           }
       }
-       
+
       if(mouse.y<=game.panningThreshold){
           if (game.offsetY>=game.panningSpeed){
               game.refreshBackground = true;
@@ -70,18 +74,25 @@ var game = {
               game.offsetY += game.panningSpeed;
           }
       }
-       
+
       if (game.refreshBackground){
           // Update mouse game coordinates based on game offsets
           mouse.calculateGameCoordinates();
       }
     },
     animationLoop:function(){
+        // Process orders for any item that handles it
+        for (var i = game.items.length - 1; i >= 0; i--){
+            if(game.items[i].processOrders){
+                game.items[i].processOrders();
+            }
+        };
+
         // Animate each of the elements within the game
         for (var i = game.items.length - 1; i >= 0; i--){
             game.items[i].animate();
         };
-      
+
         // Sort game items into a sortedItems array based on their x,y coordinates
         game.sortedItems = $.extend([],game.items);
         game.sortedItems.sort(function(a,b){
@@ -91,25 +102,25 @@ var game = {
     drawingLoop:function(){
         // Handle Panning the Map
         game.handlePanning();
-                     
+
         // Since drawing the background map is a fairly large operation,
         // we only redraw the background if it changes (due to panning)
         if (game.refreshBackground){
     game.backgroundContext.drawImage(game.currentMapImage,game.offsetX,game.offsetY,game.canvasWidth, game.canvasHeight, 0,0,game.canvasWidth,game.canvasHeight);
             game.refreshBackground = false;
         }
-      
+
         // Clear the foreground canvas
         game.foregroundContext.clearRect(0,0,game.canvasWidth,game.canvasHeight);
-      
+
         // Start drawing the foreground elements
         for (var i = game.sortedItems.length - 1; i >= 0; i--){
             game.sortedItems[i].draw();
         };
-      
+
         // Draw the mouse
         mouse.draw();
-      
+
         // Call the drawing loop for the next frame using request animation frame
         if (game.running){
             requestAnimationFrame(game.drawingLoop);
@@ -148,7 +159,7 @@ var game = {
                    break;
                }
         };
-         
+
         // Remove item from the items array
         for (var i = game.items.length - 1; i >= 0; i--){
             if(game.items[i].uid== item.uid){
@@ -156,7 +167,7 @@ var game = {
                 break;
             }
         };
-      
+
         // Remove items from the type specific array
         for (var i = game[item.type].length - 1; i >= 0; i--){
             if(game[item.type][i].uid== item.uid){
@@ -191,10 +202,49 @@ var game = {
             };
             return;
         }
-      
+
         if (item.selectable && !item.selected){
             item.selected = true;
             game.selectedItems.push(item);
         }
+    },
+    // Send command to either singleplayer or multiplayer object
+    sendCommand:function(uids,details){
+        if (game.type=="singleplayer"){
+             singleplayer.sendCommand(uids,details);
+        } else {
+            multiplayer.sendCommand(uids,details);
+        }
+    },
+    getItemByUid:function(uid){
+        for (var i = game.items.length - 1; i >= 0; i--){
+            if(game.items[i].uid== uid){
+                return game.items[i];
+            }
+        };
+    },
+    // Receive command from singleplayer or multiplayer object and send it to units
+    processCommand:function(uids,details){
+        // In case the target "to" object is in terms of uid, fetch the target object
+        var toObject;
+        if (details.toUid){
+            toObject = game.getItemByUid(details.toUid);
+            if(!toObject || toObject.lifeCode=="dead"){
+                // To object no longer exists. Invalid command
+                return;
+            }
+        }
+
+        for (var i in uids){
+            var uid= uids[i];
+            var item = game.getItemByUid(uid);
+            //if uid is a valid item, set the order for the item
+            if(item){
+                item.orders = $.extend([],details);
+                if(toObject) {
+                    item.orders.to = toObject;
+                }
+            }
+        };
     },
 }

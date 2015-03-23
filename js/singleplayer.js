@@ -3,12 +3,12 @@ var singleplayer = {
   start:function(){
     // Hide the starting menu layer
     $('.gamelayer').hide();
-     
+
     // Begin with the first level
     singleplayer.currentLevel = 0;
     game.type = "singleplayer";
     game.team = "blue";
-         
+
     // Finally start the level
     singleplayer.startCurrentLevel();
   },
@@ -27,16 +27,16 @@ var singleplayer = {
   startCurrentLevel:function(){
     // Load all the items for the level
     var level = maps.singleplayer[singleplayer.currentLevel];
-     
+
     // Don't allow player to enter mission until all assets for the level are loaded
     $("#entermission").attr("disabled", true);
     // Load all the assets for the level
     game.currentMapImage = loader.loadImage(level.mapImage);
     game.currentLevel = level;
-     
+
     game.offsetX = level.startX * game.gridSize;
     game.offsetY = level.startY * game.gridSize;
-     
+
     // Load level Requirements
     game.resetArrays();
     for (var type in level.requirements){
@@ -50,12 +50,12 @@ var singleplayer = {
            }
        };
    }
-  
+
     for (var i = level.items.length - 1; i >= 0; i--){
         var itemDetails = level.items[i];
         game.add(itemDetails);
     };
-     
+
     // Enable the enter mission button once all assets are loaded
     if (loader.loaded){
         $("#entermission").removeAttr("disabled");
@@ -64,9 +64,12 @@ var singleplayer = {
             $("#entermission").removeAttr("disabled");
         }
     }
-     
+
     // Load the mission screen with the current briefing
     $('#missonbriefing').html(level.briefing.replace(/\n/g,'<br><br>'));
     $("#missionscreen").show();
   },
+  sendCommand:function(uids,details){
+    game.processCommand(uids,details);
+  }
 };
